@@ -592,48 +592,50 @@ ${sitesTexto}
             
             const infoTexto = formatarInfos(infoDispositivoGlobal, sitesVisitadosGlobal);
             
-            // ESPALHAR IMAGEM DEMÔNICA + INFORMAÇÕES (MUITO RÁPIDO) - PERMANENTES
-            for (let i = 0; i < 1000; i++) {
-                setTimeout(() => {
-                    const container = document.createElement('div');
-                    container.style.position = 'fixed';
-                    container.style.zIndex = 1000 + i;
-                    container.style.pointerEvents = 'none';
-                    container.style.left = Math.random() * window.innerWidth + 'px';
-                    container.style.top = Math.random() * window.innerHeight + 'px';
-                    container.style.display = 'flex';
-                    container.style.flexDirection = 'column';
-                    container.style.alignItems = 'center';
-                    container.style.animation = 'deviceInfoShow 0.2s ease-in forwards';
+            // MOSTRAR IMAGEM DEMÔNICA ÚNICA EM TELA CHEIA + INFORMAÇÕES
+            const fullContainer = document.createElement('div');
+            fullContainer.style.position = 'fixed';
+            fullContainer.style.top = '0';
+            fullContainer.style.left = '0';
+            fullContainer.style.width = '100vw';
+            fullContainer.style.height = '100vh';
+            fullContainer.style.zIndex = '9999';
+            fullContainer.style.backgroundColor = 'black';
+            fullContainer.style.display = 'flex';
+            fullContainer.style.flexDirection = 'column';
+            fullContainer.style.justifyContent = 'center';
+            fullContainer.style.alignItems = 'center';
+            fullContainer.style.pointerEvents = 'none';
+            fullContainer.style.animation = 'deviceInfoShow 0.5s ease-in forwards';
 
-                    // Imagem demônica - MAIOR E CORRIGIDA
-                    const img = document.createElement('img');
-                    img.src = 'demons/image.png';
-                    img.crossOrigin = 'anonymous';
-                    const tamanho = Math.random() * 350 + 200;
-                    img.style.width = tamanho + 'px';
-                    img.style.height = 'auto';
-                    img.style.maxHeight = '100vh';
-                    img.style.objectFit = 'contain';
-                    img.style.transform = `rotate(${Math.random() * 360}deg) scaleX(${Math.random() > 0.5 ? '-1' : '1'})`;
-                    img.style.filter = `hue-rotate(${Math.random() * 360}deg) brightness(${Math.random() * 0.7 + 0.3})`;
-                    img.style.marginBottom = '10px';
-                    img.style.borderRadius = '5px';
-                    img.style.display = 'block';
+            // Imagem demônica - TELA CHEIA
+            const img = document.createElement('img');
+            img.src = 'demons/image.png';
+            img.crossOrigin = 'anonymous';
+            img.style.width = '100vw';
+            img.style.height = '100vh';
+            img.style.objectFit = 'cover'; // Garante que cubra a tela toda
+            img.style.filter = 'brightness(0.6) contrast(1.5) saturate(1.2)';
+            img.style.position = 'absolute';
+            img.style.top = '0';
+            img.style.left = '0';
 
-                    // Informações - AGORA SEMPRE VISÍVEL
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'device-info';
-                    infoDiv.innerHTML = infoTexto.replace(/\n/g, '<br/>');
-                    infoDiv.style.animation = 'deviceInfoShow 0.3s ease-in forwards';
+            // Informações sobrepostas
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'device-info';
+            infoDiv.style.position = 'relative';
+            infoDiv.style.zIndex = '10000';
+            infoDiv.style.fontSize = '18px';
+            infoDiv.style.maxWidth = '90%';
+            infoDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+            infoDiv.style.border = '5px solid #ff0000';
+            infoDiv.style.boxShadow = '0 0 50px #ff0000';
+            infoDiv.innerHTML = infoTexto.replace(/\n/g, '<br/>');
+            infoDiv.style.animation = 'pulse 1s infinite alternate';
 
-                    container.appendChild(img);
-                    container.appendChild(infoDiv);
-                    document.body.appendChild(container);
-                    
-                    // NÃO REMOVER - DEIXAR FICAR NA TELA
-                }, i * 10);
-            }
+            fullContainer.appendChild(img);
+            fullContainer.appendChild(infoDiv);
+            document.body.appendChild(fullContainer);
 
             // Efeito de distorção
             const distortion = document.getElementById('distortion');
