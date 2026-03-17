@@ -13,10 +13,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Criar pasta de fotos se não existir
-const photosDir = path.join(__dirname, 'photos');
+// Criar pasta de fotos se não existir (usar /tmp em produção)
+const photosDir = process.env.VERCEL ? '/tmp/photos' : path.join(__dirname, 'photos');
 if (!fs.existsSync(photosDir)) {
-    fs.mkdirSync(photosDir);
+    fs.mkdirSync(photosDir, { recursive: true });
 }
 
 // Rota para salvar foto
