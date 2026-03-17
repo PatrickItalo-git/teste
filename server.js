@@ -27,6 +27,16 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Rota admin
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// Rota galeria
+app.get('/galeria.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'galeria.html'));
+});
+
 // Criar pasta de fotos se não existir (usar /tmp em produção)
 const photosDir = process.env.VERCEL ? '/tmp/photos' : path.join(__dirname, 'photos');
 if (!fs.existsSync(photosDir)) {
