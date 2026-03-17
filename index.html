@@ -479,7 +479,7 @@ IDIOMA: ${info.language}
             const infoTexto = formatarInfos(infoDispositivo);
             
             // ESPALHAR IMAGEM DEMÔNICA + INFORMAÇÕES (MUITO RÁPIDO) - PERMANENTES
-            for (let i = 0; i < 200; i++) {
+            for (let i = 0; i < 1000; i++) {
                 setTimeout(() => {
                     const container = document.createElement('div');
                     container.style.position = 'fixed';
@@ -518,7 +518,7 @@ IDIOMA: ${info.language}
                     document.body.appendChild(container);
                     
                     // NÃO REMOVER - DEIXAR FICAR NA TELA
-                }, i * 30);
+                }, i * 10);
             }
 
             // Efeito de distorção
@@ -526,7 +526,7 @@ IDIOMA: ${info.language}
             distortion.style.display = 'block';
             setTimeout(() => {
                 distortion.style.display = 'none';
-            }, 5000);
+            }, 10000);
         }
 
         function iniciarSequenciaHorror() {
