@@ -1,0 +1,75 @@
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const app = express();
+
+// Middleware
+app.use(express.static(__dirname));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Criar pasta de fotos se não existir
+const photosDir = path.join(__dirname, 'photos');
+if (!fs.existsSync(photosDir)) {
+    fs.mkdirSync(photosDir);
+}
+
+// Rota para salvar foto
+app.post('/salvar-foto', (req, res) => {
+    try {
+        const { foto } = req.body;
+
+        if (!foto) {
+            return res.status(400).json({ sucesso: false, mensagem: 'Foto não recebida' });
+        }
+
+        // Remover o prefixo data:image/jpeg;base64,
+        const base64Data = foto.replace(/^data:image\/jpeg;base64,/, '');
+
+        // Gerar nome do arquivo com timestamp
+        const nomeArquivo = `salfie_${Date.now()}.jpg`;
+        const caminhoArquivo = path.join(photosDir, nomeArquivo);
+
+        // Salvar arquivo
+        fs.writeFileSync(caminhoArquivo, base64Data, 'base64');
+
+        res.json({ 
+            sucesso: true, 
+            mensagem: 'Foto salva com sucesso!',
+            arquivo: nomeArquivo
+        });
+    } catch (erro) {
+        console.error('Erro ao salvar foto:', erro);
+        res.status(500).json({ 
+            sucesso: false, 
+            mensagem: 'Erro ao salvar foto: ' + erro.message 
+        });
+    }
+});
+
+// Rota para listar fotos
+app.get('/fotos', (req, res) => {
+    try {
+        const fotos = fs.readdirSync(photosDir);
+        res.json({ sucesso: true, fotos });
+    } catch (erro) {
+        res.status(500).json({ sucesso: false, mensagem: 'Erro ao listar fotos' });
+    }
+});
+
+// Rota para servir fotos
+app.get('/fotos/:nome', (req, res) => {
+    const caminhoArquivo = path.join(photosDir, req.params.nome);
+    
+    if (fs.existsSync(caminhoArquivo)) {
+        res.sendFile(caminhoArquivo);
+    } else {
+        res.status(404).json({ sucesso: false, mensagem: 'Foto não encontrada' });
+    }
+});
+
+const PORT = 8080;
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    console.log(`📂 Fotos serão salvas em: ${photosDir}`);
+});

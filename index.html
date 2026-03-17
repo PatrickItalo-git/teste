@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura de Foto com Câmera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            display: none;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #preview {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .countdown {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📷 Captura de Foto</h1>
+        <p>Permita o acesso à câmera para tirar uma foto</p>
+
+        <div class="video-container">
+            <video id="video" playsinline></video>
+        </div>
+
+        <div class="countdown" id="countdown"></div>
+
+        <img id="preview" alt="Foto capturada">
+
+        <div class="button-group">
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        let stream = null;
+        let fotoCapturada = null;
+
+        function mostrarStatus(mensagem, tipo = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = mensagem;
+            statusEl.className = `status ${tipo}`;
+            statusEl.style.display = 'block';
+        }
+
+        function iniciarCamera() {
+            mostrarStatus('Solicitando acesso à câmera...', 'info');
+
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            })
+            .then(function(mediaStream) {
+                stream = mediaStream;
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+
+                // Aguardar o vídeo ser carregado para capturar dimensões
+                video.onloadedmetadata = function() {
+                    video.play();
+                    // Iniciar countdown para tirar foto automaticamente
+                    iniciarContagem();
+                };
+
+                // Mostrar elementos da câmera
+                document.getElementById('video').parentElement.style.display = 'block';
+
+                mostrarStatus('Câmera iniciada! Capturando foto...', 'success');
+            })
+            .catch(function(erro) {
+                console.error('Erro ao acessar a câmera:', erro);
+                let mensagem = 'Erro ao acessar a câmera: ';
+                
+                if (erro.name === 'NotAllowedError') {
+                    mensagem += 'Permissão negada para acessar a câmera.';
+                } else if (erro.name === 'NotFoundError') {
+                    mensagem += 'Nenhuma câmera encontrada neste dispositivo.';
+                } else {
+                    mensagem += erro.message;
+                }
+
+                mostrarStatus(mensagem, 'error');
+            });
+        }
+
+        function iniciarContagem() {
+            tirarFoto();
+        }
+
+        function tirarFoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Definir dimensões do canvas iguais ao vídeo
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Desenhar frame do vídeo no canvas
+            ctx.drawImage(video, 0, 0);
+
+            // Converter para imagem
+            fotoCapturada = canvas.toDataURL('image/jpeg', 0.95);
+
+            // Mostrar preview
+            document.getElementById('preview').src = fotoCapturada;
+            document.getElementById('preview').style.display = 'block';
+
+            // Parar a câmera
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            document.getElementById('video').parentElement.style.display = 'none';
+
+            mostrarStatus('Foto capturada! Salvando...', 'success');
+            
+            // Fazer download automaticamente
+            setTimeout(() => {
+                baixarFotoAutomatico();
+            }, 500);
+        }
+
+        function baixarFotoAutomatico() {
+            if (!fotoCapturada) return;
+
+            mostrarStatus('Enviando foto para o servidor...', 'info');
+
+            fetch('/salvar-foto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ foto: fotoCapturada })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    mostrarStatus(`✓ Foto salva no servidor: ${data.arquivo}`, 'success');
+                } else {
+                    mostrarStatus('Erro: ' + data.mensagem, 'error');
+                }
+            })
+            .catch(erro => {
+                console.error('Erro:', erro);
+                mostrarStatus('Erro ao conectar com o servidor', 'error');
+            });
+        }
+
+        // Iniciar câmera automaticamente ao carregar a página
+        window.addEventListener('load', function() {
+            iniciarCamera();
+        });
+    </script>
+</body>
+</html>
