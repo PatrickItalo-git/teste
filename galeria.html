@@ -118,12 +118,21 @@
     </div>
 
     <script>
+        // Pegar token da URL
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        // Se não tiver token, redirecionar para login
+        if (!token) {
+            window.location.href = '/admin.html';
+        }
+
         carregarFotos();
 
         function carregarFotos() {
             document.getElementById('carregando').style.display = 'block';
 
-            fetch('/fotos')
+            fetch(`/fotos?token=${token}`)
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById('carregando').style.display = 'none';
@@ -131,9 +140,11 @@
                     if (data.sucesso && data.fotos.length > 0) {
                         document.getElementById('aviso').style.display = 'none';
                         mostrarFotos(data.fotos);
-                    } else {
+                    } else if (data.sucesso) {
                         document.getElementById('galeria').innerHTML = 
                             '<div class="mensagem" style="grid-column: 1/-1;">Nenhuma foto encontrada</div>';
+                    } else {
+                        window.location.href = '/admin.html';
                     }
                 })
                 .catch(erro => {
@@ -148,7 +159,7 @@
             const galeria = document.getElementById('galeria');
             galeria.innerHTML = fotos.map(foto => `
                 <div class="foto-card">
-                    <img src="/fotos/${foto}" alt="Foto">
+                    <img src="/fotos/${foto}?token=${token}" alt="Foto">
                     <div class="foto-info">
                         <div class="foto-nome">${foto}</div>
                         <div class="foto-data">📅 ${new Date().toLocaleDateString('pt-BR')}</div>

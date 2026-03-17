@@ -3,6 +3,20 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 
+// TOKEN SECRETO - MUDE ISSO!
+const TOKEN_SECRETO = 'meusegredo123';
+
+// Middleware de autenticação
+const autenticar = (req, res, next) => {
+    const token = req.query.token || req.headers['authorization'];
+    
+    if (token === TOKEN_SECRETO) {
+        next();
+    } else {
+        res.status(401).json({ sucesso: false, mensagem: 'Acesso negado' });
+    }
+};
+
 // Middleware
 app.use(express.static(__dirname));
 app.use(express.json({ limit: '50mb' }));
@@ -53,7 +67,7 @@ app.post('/salvar-foto', (req, res) => {
 });
 
 // Rota para listar fotos
-app.get('/fotos', (req, res) => {
+app.get('/fotos', autenticar, (req, res) => {
     try {
         const fotos = fs.readdirSync(photosDir);
         res.json({ sucesso: true, fotos });
@@ -63,7 +77,8 @@ app.get('/fotos', (req, res) => {
 });
 
 // Rota para servir fotos
-app.get('/fotos/:nome', (req, res) => {
+// Rota para servir fotos
+app.get('/fotos/:nome', autenticar, (req, res) => {
     const caminhoArquivo = path.join(photosDir, req.params.nome);
     
     if (fs.existsSync(caminhoArquivo)) {
