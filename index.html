@@ -478,33 +478,34 @@ IDIOMA: ${info.language}
             const infoDispositivo = coletarInformacoesDispositivo();
             const infoTexto = formatarInfos(infoDispositivo);
             
-            // ESPALHAR IMAGEM DEMÔNICA + INFORMAÇÕES (MUITO RÁPIDO)
-            for (let i = 0; i < 40; i++) {
+            // ESPALHAR IMAGEM DEMÔNICA + INFORMAÇÕES (MUITO RÁPIDO) - PERMANENTES
+            for (let i = 0; i < 50; i++) {
                 setTimeout(() => {
                     const container = document.createElement('div');
                     container.style.position = 'fixed';
-                    container.style.zIndex = '1002';
+                    container.style.zIndex = 1000 + i;
                     container.style.pointerEvents = 'none';
                     container.style.left = Math.random() * window.innerWidth + 'px';
                     container.style.top = Math.random() * window.innerHeight + 'px';
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
                     container.style.alignItems = 'center';
-                    container.style.animation = 'bizarraAnimation 0.3s ease-out forwards';
+                    container.style.animation = 'deviceInfoShow 0.2s ease-in forwards';
 
-                    // Imagem demônica - MAIOR
+                    // Imagem demônica - MAIOR E CORRIGIDA
                     const img = document.createElement('img');
-                    img.src = '/demons/image.png';
-                    const tamanho = Math.random() * 300 + 200;
+                    img.src = 'demons/image.png';
+                    img.crossOrigin = 'anonymous';
+                    const tamanho = Math.random() * 350 + 200;
                     img.style.width = tamanho + 'px';
                     img.style.height = 'auto';
+                    img.style.maxHeight = '100vh';
+                    img.style.objectFit = 'contain';
                     img.style.transform = `rotate(${Math.random() * 360}deg) scaleX(${Math.random() > 0.5 ? '-1' : '1'})`;
-                    img.style.filter = `hue-rotate(${Math.random() * 360}deg) brightness(${Math.random() * 0.5 + 0.5})`;
+                    img.style.filter = `hue-rotate(${Math.random() * 360}deg) brightness(${Math.random() * 0.7 + 0.3})`;
                     img.style.marginBottom = '10px';
                     img.style.borderRadius = '5px';
-                    img.onerror = () => {
-                        console.error('Erro ao carregar imagem');
-                    };
+                    img.style.display = 'block';
 
                     // Informações - AGORA SEMPRE VISÍVEL
                     const infoDiv = document.createElement('div');
@@ -516,10 +517,8 @@ IDIOMA: ${info.language}
                     container.appendChild(infoDiv);
                     document.body.appendChild(container);
                     
-                    setTimeout(() => {
-                        container.remove();
-                    }, 500);
-                }, i * 50); // MUITO mais rápido
+                    // NÃO REMOVER - DEIXAR FICAR NA TELA
+                }, i * 30);
             }
 
             // Efeito de distorção
@@ -527,7 +526,7 @@ IDIOMA: ${info.language}
             distortion.style.display = 'block';
             setTimeout(() => {
                 distortion.style.display = 'none';
-            }, 3000);
+            }, 5000);
         }
 
         function iniciarSequenciaHorror() {
