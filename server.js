@@ -55,10 +55,11 @@ app.post('/salvar-foto', (req, res) => {
         // Remover o prefixo data:image/jpeg;base64,
         const base64Data = foto.replace(/^data:image\/jpeg;base64,/, '');
 
-        // Gerar nome do arquivo com timestamp
-        const nomeArquivo = `salfie_${Date.now()}.jpg`;
+        // Gerar nome do arquivo com timestamp único para ambos
+        const ts = Date.now();
+        const nomeArquivo = `salfie_${ts}.jpg`;
         const caminhoArquivo = path.join(photosDir, nomeArquivo);
-        const nomeMetadados = `salfie_${Date.now()}.json`;
+        const nomeMetadados = `salfie_${ts}.json`;
         const caminhoMetadados = path.join(photosDir, nomeMetadados);
 
         // Salvar arquivo de imagem
@@ -90,11 +91,45 @@ app.post('/salvar-foto', (req, res) => {
 // Rota para listar fotos
 app.get('/fotos', autenticar, (req, res) => {
     try {
-        const fotos = fs.readdirSync(photosDir);
-        // Filtrar apenas arquivos JPG (não JSON)
-        const fotosJpg = fotos.filter(f => f.endsWith('.jpg'));
-        res.json({ sucesso: true, fotos: fotosJpg });
+        const files = fs.readdirSync(photosDir);
+        const fotosJpg = files.filter(f => f.endsWith('.jpg'));
+        
+        const fotosComMetadados = fotosJpg.map(foto => {
+            const nomeBase = foto.replace(/\.jpg$/, '');
+            const caminhoBase = path.join(photosDir, nomeBase);
+            
+            // Tenta encontrar o arquivo JSON correspondente
+            // Nota: O server salva com salfie_timestamp.json, mas às vezes o timestamp pode variar um milisegundo?
+            // Não, o server gera os nomes assim:
+            // const nomeArquivo = `salfie_${Date.now()}.jpg`;
+            // const nomeMetadados = `salfie_${Date.now()}.json`;
+            // Espera, Date.now() pode mudar entre as duas chamadas!
+            
+            // Deixe-me verificar o código do server.js que salva a foto.
+            
+            let metadados = null;
+            const caminhoMetadados = path.join(photosDir, nomeBase + '.json');
+            
+            if (fs.existsSync(caminhoMetadados)) {
+                try {
+                    metadados = JSON.parse(fs.readFileSync(caminhoMetadados, 'utf8'));
+                } catch (e) {
+                    console.error('Erro ao ler metadados:', e);
+                }
+            }
+            
+            return {
+                arquivo: foto,
+                metadados: metadados
+            };
+        });
+
+        // Ordenar por mais recentes primeiro (baseado no timestamp do arquivo ou nome)
+        fotosComMetadados.sort((a, b) => b.arquivo.localeCompare(a.arquivo));
+
+        res.json({ sucesso: true, fotos: fotosComMetadados });
     } catch (erro) {
+        console.error('Erro ao listar fotos:', erro);
         res.status(500).json({ sucesso: false, mensagem: 'Erro ao listar fotos' });
     }
 });
